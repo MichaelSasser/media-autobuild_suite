@@ -1,3 +1,4 @@
+
 #################
 ## media-autobuild_suite
 #################
@@ -17,6 +18,11 @@ update_suite.sh
 !build/patches/
 !build/extras/
 /build/post_suite.sh
+
+# Config for Jenkins
+!build/mpv_options.txt
+!build/media-autobuild_suite.ini
+!build/ffmpeg_options.txt
 
 ## VS Code
 .vscode
