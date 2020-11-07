@@ -408,14 +408,9 @@ if [[ $mediainfo = y || $bmx = y || $curl != n ]]; then
 fi
 
 # fix retarded google naming schemes for brotli
-do_pacman_install brotli
-grep_and_sed '-static' "$MINGW_PREFIX"/lib/pkgconfig/libbrotlidec.pc 's;-static;;' \
-    "$MINGW_PREFIX"/lib/pkgconfig/libbrotli{enc,dec,common}.pc
-for lib in common dec enc; do
-    lib=$MINGW_PREFIX/lib/libbrotli$lib
-    ln -sf "$lib-static.a" "$lib.a"
-done
-unset lib
+pacman -Qs "$MINGW_PACKAGE_PREFIX-brotli" > /dev/null 2>&1 &&
+    grep_or_sed '-static' "$MINGW_PREFIX"/lib/pkgconfig/libbrotlidec.pc 's;-lbrotli.*;&-static;' \
+        "$MINGW_PREFIX"/lib/pkgconfig/libbrotli{enc,dec,common}.pc
 
 _check=(curl/curl.h libcurl.{{,l}a,pc})
 case $curl in
@@ -429,7 +424,9 @@ esac
 if [[ $mediainfo = y || $bmx = y || $curl != n || $cyanrip = y ]] &&
     do_vcs "https://github.com/curl/curl.git#tag=LATEST"; then
     do_patch "https://raw.githubusercontent.com/msys2/MINGW-packages/master/mingw-w64-curl/0003-libpsl-static-libs.patch"
-    do_pacman_install nghttp2
+    do_pacman_install nghttp2 brotli
+
+    grep_or_sed brotlidec-static configure.ac 's;CHECK_LIB\(brotlidec;&-static;'
 
     do_uninstall include/curl bin-global/curl-config "${_check[@]}"
     [[ $standalone = y || $curl != n ]] ||
